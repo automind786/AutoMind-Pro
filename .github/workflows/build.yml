@@ -64,7 +64,7 @@ jobs:
           android.nonTransitiveRClass=true
           android.suppressUnsupportedCompileSdk=34
           EOF
-                - name: Generate Part 2
+      - name: Generate Part 2
         run: |
           cat << 'EOF' > app/build.gradle
           plugins {
