@@ -19,15 +19,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-
-      - name: Setup Gradle 8.5
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.5'
-
-      - name: Generate Part 1 Configs
+      - name: Generate Project Files Part 1
         run: |
           mkdir -p app/src/main/java/com/automind/agent
           mkdir -p app/src/main/res/drawable
@@ -64,7 +56,7 @@ jobs:
           android.nonTransitiveRClass=true
           android.suppressUnsupportedCompileSdk=34
           EOF
-      - name: Generate Part 2 Gradle and Manifest
+      - name: Generate Project Files Part 2
         run: |
           cat << 'EOF' > app/build.gradle
           plugins {
