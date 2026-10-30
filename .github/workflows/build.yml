@@ -136,7 +136,7 @@ jobs:
               </application>
           </manifest>
           EOF
-                - name: Generate Part 3
+      - name: Generate Part 3
         run: |
           cat << 'EOF' > app/src/main/java/com/automind/agent/MainActivity.kt
           package com.automind.agent
