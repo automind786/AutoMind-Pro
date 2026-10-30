@@ -27,7 +27,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Part 1
+      - name: Generate Part 1 Configs
         run: |
           mkdir -p app/src/main/java/com/automind/agent
           mkdir -p app/src/main/res/drawable
@@ -64,7 +64,7 @@ jobs:
           android.nonTransitiveRClass=true
           android.suppressUnsupportedCompileSdk=34
           EOF
-      - name: Generate Part 2
+      - name: Generate Part 2 Gradle and Manifest
         run: |
           cat << 'EOF' > app/build.gradle
           plugins {
@@ -136,7 +136,7 @@ jobs:
               </application>
           </manifest>
           EOF
-      - name: Generate Part 3
+      - name: Generate Part 3 MainActivity
         run: |
           cat << 'EOF' > app/src/main/java/com/automind/agent/MainActivity.kt
           package com.automind.agent
@@ -568,7 +568,7 @@ jobs:
                   val pm = packageManager
                   for (app in pm.getInstalledApplications(PackageManager.GET_META_DATA)) {
                       if (pm.getLaunchIntentForPackage(app.packageName) != null) {
-                          val label = pm.getApplicationLabel(app).toString().lowercase()
+                        val label = pm.getApplicationLabel(app).toString().lowercase()
                           if (label.contains(name) || name.contains(label)) return app.packageName
                       }
                   }
