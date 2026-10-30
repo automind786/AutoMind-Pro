@@ -20,7 +20,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v2
 
       - name: Setup Gradle 8.5
         uses: gradle/actions/setup-gradle@v3
@@ -568,7 +568,7 @@ jobs:
                   val pm = packageManager
                   for (app in pm.getInstalledApplications(PackageManager.GET_META_DATA)) {
                       if (pm.getLaunchIntentForPackage(app.packageName) != null) {
-                        val label = pm.getApplicationLabel(app).toString().lowercase()
+                          val label = pm.getApplicationLabel(app).toString().lowercase()
                           if (label.contains(name) || name.contains(label)) return app.packageName
                       }
                   }
@@ -623,7 +623,7 @@ jobs:
                   speechRecognizer?.setRecognitionListener(object : RecognitionListener {
                       override fun onReadyForSpeech(params: Bundle?) { inputPrompt.hint = "Listening..." }
                       override fun onResults(results: Bundle?) {
-                          inputPrompt.hint = "Ask AutoMind..."
+                        inputPrompt.hint = "Ask AutoMind..."
                           val match = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.get(0)
                           if (!match.isNullOrEmpty()) submitCommand(match)
                       }
