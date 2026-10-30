@@ -27,7 +27,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Project Files
+      - name: Generate Part 1 Configs
         run: |
           mkdir -p app/src/main/java/com/automind/agent
           mkdir -p app/src/main/res/drawable
@@ -64,7 +64,8 @@ jobs:
           android.nonTransitiveRClass=true
           android.suppressUnsupportedCompileSdk=34
           EOF
-
+                - name: Generate Part 2 Gradle and Manifest
+        run: |
           cat << 'EOF' > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -105,7 +106,8 @@ jobs:
               implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
           }
           EOF
-                    cat << 'EOF' > app/src/main/AndroidManifest.xml
+
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools">
@@ -134,7 +136,8 @@ jobs:
               </application>
           </manifest>
           EOF
-
+                - name: Generate Part 3 MainActivity Setup
+        run: |
           cat << 'EOF' > app/src/main/java/com/automind/agent/MainActivity.kt
           package com.automind.agent
 
@@ -227,7 +230,7 @@ jobs:
               private fun scrollToBottom() {
                   chatScrollView.post { chatScrollView.fullScroll(View.FOCUS_DOWN) }
               }
-                            private fun buildUi() {
+                           private fun buildUi() {
                   val root = RelativeLayout(this).apply {
                       setBackgroundColor(Color.parseColor("#131314"))
                   }
