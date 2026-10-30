@@ -1,4 +1,4 @@
-name: Build AutoMind Pro Hybrid APK
+name: Build AutoMind Pro APK
 
 on:
   push:
@@ -27,10 +27,9 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Config and Python Files
+      - name: Generate Project Files
         run: |
           mkdir -p app/src/main/java/com/automind/agent
-          mkdir -p app/src/main/python
           mkdir -p app/src/main/res/drawable
 
           cat << 'EOF' > settings.gradle
@@ -56,7 +55,6 @@ jobs:
           plugins {
               id 'com.android.application' version '8.2.2' apply false
               id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
-              id 'com.chaquo.python' version '15.0.1' apply false
           }
           EOF
 
@@ -71,7 +69,6 @@ jobs:
           plugins {
               id 'com.android.application'
               id 'org.jetbrains.kotlin.android'
-              id 'com.chaquo.python'
           }
 
           android {
@@ -82,12 +79,8 @@ jobs:
                   applicationId "com.automind.agent"
                   minSdk 24
                   targetSdk 34
-                  versionCode 2
-                  versionName "2.0-Pro"
-
-                  ndk {
-                      abiFilters "arm64-v8a", "armeabi-v7a"
-                  }
+                  versionCode 1
+                  versionName "1.0"
               }
 
               buildTypes {
@@ -112,30 +105,7 @@ jobs:
               implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
           }
           EOF
-
-          cat << 'EOF' > app/src/main/res/drawable/ic_automind_logo.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp"
-              android:height="108dp"
-              android:viewportWidth="108"
-              android:viewportHeight="108">
-              <path
-                  android:fillColor="#131314"
-                  android:pathData="M0,0h108v108h-108z"/>
-              <path
-                  android:fillColor="#1E1F20"
-                  android:pathData="M18,18h72a16,16 0 0,1 16,16v40a16,16 0 0,1 -16,16h-72a16,16 0 0,1 -16,-16v-40a16,16 0 0,1 16,-16z"/>
-              <path
-                  android:fillColor="#FF2E2E"
-                  android:pathData="M54,28L38,54h14l-6,26l24,-30H54z"/>
-              <path
-                  android:fillColor="#7CACF8"
-                  android:pathData="M34,86h40v3h-40z"/>
-          </vector>
-          EOF
-
-          cat << 'EOF' > app/src/main/AndroidManifest.xml
+                    cat << 'EOF' > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools">
@@ -149,9 +119,7 @@ jobs:
 
               <application
                   android:allowBackup="true"
-                  android:icon="@drawable/ic_automind_logo"
-                  android:roundIcon="@drawable/ic_automind_logo"
-                  android:label="AutoMind"
+                  android:label="AutoMind Pro"
                   android:usesCleartextTraffic="true"
                   android:theme="@style/Theme.AppCompat.NoActionBar">
                   <activity
@@ -167,114 +135,6 @@ jobs:
           </manifest>
           EOF
 
-          cat << 'EOF' > app/src/main/python/offline_brain.py
-          import json
-          import datetime
-          import re
-
-          def process_command(user_input, force_offline=False):
-              cmd = user_input.lower().strip()
-
-              if "torch on" in cmd or "flashlight on" in cmd or "light jala" in cmd:
-                  return json.dumps({
-                      "route": "local",
-                      "type": "action",
-                      "action": "torch_on",
-                      "reply": "Offline Python Engine: Flashlight ON kar di gayi hai."
-                  })
-
-              if "torch off" in cmd or "flashlight off" in cmd or "light band" in cmd:
-                  return json.dumps({
-                      "route": "local",
-                      "type": "action",
-                      "action": "torch_off",
-                      "reply": "Offline Python Engine: Flashlight OFF kar di gayi hai."
-                  })
-
-              if "wifi" in cmd or "wi-fi" in cmd:
-                  return json.dumps({
-                      "route": "local",
-                      "type": "action",
-                      "action": "wifi_settings",
-                      "reply": "Wi-Fi settings open kar raha hoon."
-                  })
-
-              if "bluetooth" in cmd:
-                  return json.dumps({
-                      "route": "local",
-                      "type": "action",
-                      "action": "bluetooth_settings",
-                      "reply": "Bluetooth settings open kar raha hoon."
-                  })
-
-              if "setting" in cmd:
-                  return json.dumps({
-                      "route": "local",
-                      "type": "action",
-                      "action": "open_settings",
-                      "reply": "Phone ki Settings open kar raha hoon."
-                  })
-
-              if cmd.startswith("open ") or cmd.startswith("kholo "):
-                  app_name = cmd.replace("open ", "").replace("kholo ", "").strip()
-                  return json.dumps({
-                      "route": "local",
-                      "type": "action",
-                      "action": "open_app",
-                      "target": app_name,
-                      "reply": f"{app_name.title()} open kiya ja raha hai."
-                  })
-
-              if "time" in cmd or "samay" in cmd or "baje" in cmd:
-                  now = datetime.datetime.now().strftime("%I:%M %p")
-                  return json.dumps({
-                      "route": "local",
-                      "type": "chat",
-                      "reply": f"Abhi samay hua hai {now}."
-                  })
-
-              if "date" in cmd or "tarikh" in cmd or "aaj kya din" in cmd:
-                  today = datetime.datetime.now().strftime("%A, %d %B %Y")
-                  return json.dumps({
-                      "route": "local",
-                      "type": "chat",
-                      "reply": f"Aaj ki tarikh hai: {today}."
-                  })
-
-              math_match = re.fullmatch(r'[\d\s\+\-\*\/\(\)\.]+', cmd)
-              if math_match and any(op in cmd for op in ['+', '-', '*', '/']):
-                  try:
-                      ans = eval(cmd)
-                      return json.dumps({
-                          "route": "local",
-                          "type": "chat",
-                          "reply": f"Calculation Result: {ans}"
-                      })
-                  except Exception:
-                      pass
-
-              if "kon ho" in cmd or "who are you" in cmd or "tumhara naam" in cmd:
-                  return json.dumps({
-                      "route": "local",
-                      "type": "chat",
-                      "reply": "Main AutoMind Pro Hybrid Agent hoon. Mere andar Offline Python Engine aur Online Cloud AI dono ka dimaag juda hua hai."
-                  })
-
-              if not force_offline:
-                  return json.dumps({
-                      "route": "cloud",
-                      "type": "chat",
-                      "reply": ""
-                  })
-
-              return json.dumps({
-                  "route": "local",
-                  "type": "chat",
-                  "reply": f"Offline Python Mode active hai. Aapne kaha: '{user_input}'. Online AI jawab ke liye Internet on karein ya Hybrid mode chunein."
-              })
-          EOF
-                - name: Generate Kotlin UI and Build APK
-        run: |
           cat << 'EOF' > app/src/main/java/com/automind/agent/MainActivity.kt
           package com.automind.agent
 
@@ -312,8 +172,6 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
-          import com.chaquo.python.Python
-          import com.chaquo.python.android.AndroidPlatform
           import kotlinx.coroutines.CoroutineScope
           import kotlinx.coroutines.Dispatchers
           import kotlinx.coroutines.delay
@@ -337,34 +195,25 @@ jobs:
 
               private lateinit var tts: TextToSpeech
               private var isTtsEnabled = true
-              private var engineMode = "HYBRID"
               private var speechRecognizer: SpeechRecognizer? = null
 
               private lateinit var chatContainer: LinearLayout
               private lateinit var chatScrollView: ScrollView
               private lateinit var inputPrompt: EditText
-              private lateinit var statusBadge: TextView
               private var thinkingView: View? = null
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
-
-                  if (!Python.isStarted()) {
-                      Python.start(AndroidPlatform(this))
-                  }
-
-                  prefs = getSharedPreferences("automind_pro_prefs", Context.MODE_PRIVATE)
+                  prefs = getSharedPreferences("automind_prefs", Context.MODE_PRIVATE)
                   isTtsEnabled = prefs.getBoolean("tts_enabled", true)
-                  engineMode = prefs.getString("engine_mode", "HYBRID") ?: "HYBRID"
 
                   if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                       ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
                   }
 
                   tts = TextToSpeech(this, this)
-                  buildGeminiProUi()
-
-                  addBotBubble("Hello Shahid! AutoMind Pro Hybrid Agent ready hai. Mere andar Offline Python Engine aur Online Cloud Server dono active hain.", "SYSTEM")
+                  buildUi()
+                  addBotBubble("Hello Shahid! AutoMind Pro Online Agent ready hai. Main aapke phone ke offline actions aur Render cloud brain ko control kar sakta hoon.")
               }
 
               private fun getRenderUrl(): String {
@@ -378,8 +227,7 @@ jobs:
               private fun scrollToBottom() {
                   chatScrollView.post { chatScrollView.fullScroll(View.FOCUS_DOWN) }
               }
-
-              private fun buildGeminiProUi() {
+                            private fun buildUi() {
                   val root = RelativeLayout(this).apply {
                       setBackgroundColor(Color.parseColor("#131314"))
                   }
@@ -388,54 +236,35 @@ jobs:
                       id = View.generateViewId()
                       orientation = LinearLayout.HORIZONTAL
                       gravity = Gravity.CENTER_VERTICAL
-                      setPadding(dp(18), dp(16), dp(14), dp(12))
+                      setPadding(dp(18), dp(16), dp(18), dp(12))
                       setBackgroundColor(Color.parseColor("#131314"))
                   }
 
-                  val logoBadge = TextView(this).apply {
-                      text = "⚡"
-                      textSize = 18f
-                      setTextColor(Color.parseColor("#FF4B4B"))
-                      setPadding(dp(10), dp(6), dp(10), dp(6))
-                      background = GradientDrawable().apply {
-                          cornerRadius = dp(12).toFloat()
-                          setColor(Color.parseColor("#1E1F20"))
-                          setStroke(dp(1), Color.parseColor("#333538"))
-                      }
+                  val sparkle = TextView(this).apply {
+                      text = "✦"
+                      textSize = 22f
+                      setTextColor(Color.parseColor("#7CACF8"))
+                      setPadding(0, 0, dp(10), 0)
                   }
 
-                  val titleBox = LinearLayout(this).apply {
-                      orientation = LinearLayout.VERTICAL
-                      setPadding(dp(12), 0, 0, 0)
-                      layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                  }
-
-                  val titleText = TextView(this).apply {
-                      text = "automind"
+                  val title = TextView(this).apply {
+                      text = "AutoMind Pro"
                       textSize = 20f
                       typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
-                      setTextColor(Color.parseColor("#FFFFFF"))
+                      setTextColor(Color.parseColor("#E3E3E3"))
+                      layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                   }
-
-                  statusBadge = TextView(this).apply {
-                      text = "● $engineMode ENGINE"
-                      textSize = 11f
-                      setTextColor(Color.parseColor("#7CACF8"))
-                  }
-
-                  titleBox.addView(titleText)
-                  titleBox.addView(statusBadge)
 
                   val menuBtn = TextView(this).apply {
                       text = "⋮"
                       textSize = 24f
-                      setTextColor(Color.parseColor("#E3E3E3"))
-                      setPadding(dp(12), dp(4), dp(8), dp(4))
-                      setOnClickListener { showTopMenu(it) }
+                      setTextColor(Color.parseColor("#C4C7C5"))
+                      setPadding(dp(10), dp(4), dp(4), dp(4))
+                      setOnClickListener { showSettingsMenu(it) }
                   }
 
-                  header.addView(logoBadge)
-                  header.addView(titleBox)
+                  header.addView(sparkle)
+                  header.addView(title)
                   header.addView(menuBtn)
 
                   val headerParams = RelativeLayout.LayoutParams(
@@ -480,7 +309,7 @@ jobs:
                       setOnClickListener {
                           val q = inputPrompt.text.toString().trim()
                           if (q.isNotEmpty()) {
-                              routeUserCommand(q)
+                              submitCommand(q)
                               inputPrompt.setText("")
                           }
                       }
@@ -504,11 +333,11 @@ jobs:
                       setPadding(dp(16), 0, dp(16), dp(8))
                   }
 
-                  val chipsRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-                  val chips = listOf("⚡ Torch on", "💡 Torch off", "🕒 Time kya hai", "▶ Open YouTube", "📶 Wi-Fi", "🧮 245 * 18", "🌍 Space facts")
-                  for (c in chips) {
-                      val chipView = TextView(this).apply {
-                          text = c
+                  val chipsLayout = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+                  val suggestions = listOf("⚡ Torch on", "💡 Torch off", "▶ Open YouTube", "⚙ Settings", "🌍 Space details")
+                  for (item in suggestions) {
+                      val chip = TextView(this).apply {
+                          text = item
                           setTextColor(Color.parseColor("#C4C7C5"))
                           textSize = 13f
                           setPadding(dp(14), dp(8), dp(14), dp(8))
@@ -521,13 +350,12 @@ jobs:
                               LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
                           ).apply { setMargins(0, 0, dp(8), 0) }
                           setOnClickListener {
-                              val clean = c.replace(Regex("^[⚡💡🕒▶📶🧮🌍]\\s*"), "")
-                              routeUserCommand(clean)
+                              submitCommand(item.replace("⚡ ", "").replace("💡 ", "").replace("▶ ", "").replace("⚙ ", ""))
                           }
                       }
-                      chipsRow.addView(chipView)
+                      chipsLayout.addView(chip)
                   }
-                  chipsScroll.addView(chipsRow)
+                  chipsScroll.addView(chipsLayout)
 
                   val chipsParams = RelativeLayout.LayoutParams(
                       RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT
@@ -556,141 +384,274 @@ jobs:
                   setContentView(root)
               }
 
-              private fun routeUserCommand(command: String) {
-                  addUserBubble(command)
+              private fun showSettingsMenu(anchor: View) {
+                  val popup = PopupMenu(this, anchor)
+                  popup.menu.add(0, 1, 0, if (isTtsEnabled) "🔊 Voice Output: ON" else "🔇 Voice Output: OFF")
+                  popup.menu.add(0, 2, 1, "🌐 Change Server URL")
+                  popup.menu.add(0, 3, 2, "🗑 Clear Conversation")
+
+                  popup.setOnMenuItemClickListener { menuItem ->
+                      when (menuItem.itemId) {
+                          1 -> {
+                              isTtsEnabled = !isTtsEnabled
+                              prefs.edit().putBoolean("tts_enabled", isTtsEnabled).apply()
+                              Toast.makeText(this, if (isTtsEnabled) "Voice enabled" else "Voice muted", Toast.LENGTH_SHORT).show()
+                          }
+                          2 -> showChangeUrlDialog()
+                          3 -> {
+                              chatContainer.removeAllViews()
+                              addBotBubble("Conversation cleared. Naya command dein!")
+                          }
+                      }
+                      true
+                  }
+                  popup.show()
+              }
+
+              private fun showChangeUrlDialog() {
+                  val input = EditText(this).apply {
+                      setText(getRenderUrl())
+                      setPadding(dp(16), dp(16), dp(16), dp(16))
+                  }
+                  AlertDialog.Builder(this)
+                      .setTitle("Backend Server URL")
+                      .setView(input)
+                      .setPositiveButton("Save") { _, _ ->
+                          val newUrl = input.text.toString().trim()
+                          if (newUrl.isNotEmpty()) {
+                              prefs.edit().putString("server_url", newUrl).apply()
+                              Toast.makeText(this, "URL Saved!", Toast.LENGTH_SHORT).show()
+                          }
+                      }
+                      .setNegativeButton("Cancel", null)
+                      .show()
+              }
+
+              private fun submitCommand(cmd: String) {
+                  addUserBubble(cmd)
+                  if (handleOfflineAction(cmd)) return
                   showThinking()
+                  askCloudAI(cmd)
+              }
 
-                  CoroutineScope(Dispatchers.IO).launch {
-                      if (engineMode != "ONLINE_ONLY") {
-                          val forceOffline = (engineMode == "OFFLINE_ONLY") || !isInternetAvailable()
-                          val pyJson = runEmbeddedPython(command, forceOffline)
-                          val route = pyJson.optString("route", "cloud")
+              private fun addUserBubble(message: String) {
+                  val row = LinearLayout(this).apply {
+                      orientation = LinearLayout.HORIZONTAL
+                      gravity = Gravity.END
+                      setPadding(0, dp(6), 0, dp(6))
+                  }
+                  val bubble = TextView(this).apply {
+                      text = message
+                      setTextColor(Color.parseColor("#E3E3E3"))
+                      textSize = 15f
+                      setPadding(dp(16), dp(12), dp(16), dp(12))
+                      background = GradientDrawable().apply {
+                          cornerRadius = dp(20).toFloat()
+                          setColor(Color.parseColor("#282A2C"))
+                      }
+                      maxWidth = (resources.displayMetrics.widthPixels * 0.80).toInt()
+                  }
+                  row.addView(bubble)
+                  chatContainer.addView(row)
+                  scrollToBottom()
+              }
 
-                          if (route == "local") {
-                              withContext(Dispatchers.Main) {
-                                  handleEngineJson(pyJson, "OFFLINE PYTHON")
+              private fun addBotBubble(message: String) {
+                  removeThinking()
+                  val row = LinearLayout(this).apply {
+                      orientation = LinearLayout.HORIZONTAL
+                      gravity = Gravity.START
+                      setPadding(0, dp(6), 0, dp(6))
+                  }
+                  val icon = TextView(this).apply {
+                      text = "✦"
+                      textSize = 15f
+                      setTextColor(Color.parseColor("#7CACF8"))
+                      setPadding(0, dp(4), dp(8), 0)
+                  }
+                  val bubble = TextView(this).apply {
+                      text = ""
+                      setTextColor(Color.parseColor("#E3E3E3"))
+                      textSize = 15f
+                      lineSpacingExtra = dp(4).toFloat()
+                      setPadding(dp(14), dp(10), dp(14), dp(10))
+                      background = GradientDrawable().apply {
+                          cornerRadius = dp(16).toFloat()
+                          setColor(Color.parseColor("#1E1F20"))
+                          setStroke(dp(1), Color.parseColor("#2B2D30"))
+                      }
+                      maxWidth = (resources.displayMetrics.widthPixels * 0.82).toInt()
+                  }
+                  row.addView(icon)
+                  row.addView(bubble)
+                  chatContainer.addView(row)
+                  scrollToBottom()
+
+                  CoroutineScope(Dispatchers.Main).launch {
+                      val sb = StringBuilder()
+                      val words = message.split(" ")
+                      for (w in words) {
+                          sb.append(w).append(" ")
+                          bubble.text = sb.toString()
+                          delay(20)
+                          scrollToBottom()
+                      }
+                  }
+
+                  if (isTtsEnabled) {
+                      tts.speak(message, TextToSpeech.QUEUE_FLUSH, null, null)
+                  }
+              }
+
+              private fun showThinking() {
+                  val row = LinearLayout(this).apply {
+                      orientation = LinearLayout.HORIZONTAL
+                      gravity = Gravity.START
+                      setPadding(0, dp(6), 0, dp(6))
+                  }
+                  val bubble = TextView(this).apply {
+                      text = "✦ Thinking..."
+                      setTextColor(Color.parseColor("#7CACF8"))
+                      textSize = 14f
+                      setPadding(dp(14), dp(8), dp(14), dp(8))
+                  }
+                  row.addView(bubble)
+                  thinkingView = row
+                  chatContainer.addView(row)
+                  scrollToBottom()
+              }
+
+              private fun removeThinking() {
+                  thinkingView?.let {
+                      chatContainer.removeView(it)
+                      thinkingView = null
+                  }
+              }
+
+              private fun handleOfflineAction(rawCmd: String): Boolean {
+                  val cmd = rawCmd.lowercase().trim()
+                  when {
+                      cmd.contains("torch on") || cmd.contains("flashlight on") -> {
+                          toggleTorch(true)
+                          addBotBubble("Flashlight on kar di hai.")
+                          return true
+                      }
+                      cmd.contains("torch off") || cmd.contains("flashlight off") -> {
+                          toggleTorch(false)
+                          addBotBubble("Flashlight off kar di hai.")
+                          return true
+                      }
+                      cmd.contains("setting") -> {
+                          startActivity(Intent(Settings.ACTION_SETTINGS))
+                          addBotBubble("Phone Settings open kar raha hoon.")
+                          return true
+                      }
+                      cmd.startsWith("open") || cmd.startsWith("kholo") -> {
+                          val target = cmd.replace("open", "").replace("kholo", "").trim()
+                          val pkg = findAppPackage(target)
+                          if (pkg != null) {
+                              packageManager.getLaunchIntentForPackage(pkg)?.let {
+                                  startActivity(it)
+                                  addBotBubble("$target open kar diya hai.")
+                                  return true
                               }
-                              return@launch
-                          }
-                      }
-
-                      if (isInternetAvailable()) {
-                          val cloudJson = callRenderCloud(command)
-                          withContext(Dispatchers.Main) {
-                              handleEngineJson(cloudJson, "ONLINE CLOUD")
-                          }
-                      } else {
-                          val fallbackJson = runEmbeddedPython(command, true)
-                          withContext(Dispatchers.Main) {
-                              handleEngineJson(fallbackJson, "OFFLINE FALLBACK")
                           }
                       }
                   }
+                  return false
               }
 
-              private fun runEmbeddedPython(command: String, forceOffline: Boolean): JSONObject {
-                  return try {
-                      val py = Python.getInstance()
-                      val module = py.getModule("offline_brain")
-                      val resultStr = module.callAttr("process_command", command, forceOffline).toString()
-                      JSONObject(resultStr)
-                  } catch (e: Exception) {
-                      JSONObject().apply {
-                          put("route", "local")
-                          put("type", "chat")
-                          put("reply", "Python Engine Error: ${e.message}")
-                      }
-                  }
-              }
-
-              private fun callRenderCloud(prompt: String): JSONObject {
-                  return try {
-                      val payload = JSONObject().apply { put("message", prompt) }
-                      val body = payload.toString().toRequestBody("application/json".toMediaType())
-                      val req = Request.Builder().url(getRenderUrl()).post(body).build()
-                      val res = client.newCall(req).execute()
-                      val str = res.body?.string() ?: "{}"
-                      JSONObject(str)
-                  } catch (e: Exception) {
-                      JSONObject().apply {
-                          put("type", "chat")
-                          put("reply", "Cloud Server Error: ${e.message}")
-                      }
-                  }
-              }
-
-              private fun handleEngineJson(data: JSONObject, sourceTag: String) {
-                  val type = data.optString("type", "chat")
-                  val action = data.optString("action", "")
-                  val target = data.optString("target", "")
-                  val pkg = data.optString("package", "")
-                  val reply = data.optString("reply", "Done.")
-
-                  addBotBubble(reply, sourceTag)
-
-                  if (type == "action") {
-                      when (action) {
-                          "torch_on" -> setTorch(true)
-                          "torch_off" -> setTorch(false)
-                          "open_settings" -> startActivity(Intent(Settings.ACTION_SETTINGS))
-                          "wifi_settings" -> startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
-                          "bluetooth_settings" -> startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                          "open_app" -> openAppByName(target)
-                          else -> if (pkg.isNotEmpty()) {
-                              packageManager.getLaunchIntentForPackage(pkg)?.let { startActivity(it) }
-                          }
-                      }
-                  }
-              }
-
-              private fun openAppByName(name: String) {
+              private fun findAppPackage(name: String): String? {
                   val pm = packageManager
                   for (app in pm.getInstalledApplications(PackageManager.GET_META_DATA)) {
                       if (pm.getLaunchIntentForPackage(app.packageName) != null) {
                           val label = pm.getApplicationLabel(app).toString().lowercase()
-                          if (label.contains(name.lowercase()) || name.lowercase().contains(label)) {
-                              pm.getLaunchIntentForPackage(app.packageName)?.let { startActivity(it) }
-                              return
-                          }
+                          if (label.contains(name) || name.contains(label)) return app.packageName
                       }
                   }
-                  Toast.makeText(this, "App '$name' phone me nahi mili", Toast.LENGTH_SHORT).show()
+                  return null
               }
 
-              private fun setTorch(enable: Boolean) {
+              private fun toggleTorch(enable: Boolean) {
                   try {
                       val cm = getSystemService(Context.CAMERA_SERVICE) as CameraManager
                       cm.setTorchMode(cm.cameraIdList[0], enable)
                   } catch (_: Exception) {}
               }
 
-              private fun isInternetAvailable(): Boolean {
-                  val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                  val cap = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
-                  return cap.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+              private fun askCloudAI(prompt: String) {
+                  CoroutineScope(Dispatchers.IO).launch {
+                      try {
+                          val payload = JSONObject().apply { put("message", prompt) }
+                          val body = payload.toString().toRequestBody("application/json".toMediaType())
+                          val req = Request.Builder().url(getRenderUrl()).post(body).build()
+                          val res = client.newCall(req).execute()
+                          val responseString = res.body?.string() ?: "{}"
+                          val data = JSONObject(responseString)
+
+                          val type = data.optString("type", "chat")
+                          val reply = data.optString("reply", "No response from AI")
+                          val pkg = data.optString("package", "")
+
+                          withContext(Dispatchers.Main) {
+                              addBotBubble(reply)
+                              if (type == "action" && pkg.isNotEmpty()) {
+                                  packageManager.getLaunchIntentForPackage(pkg)?.let { startActivity(it) }
+                              }
+                          }
+                      } catch (e: Exception) {
+                          withContext(Dispatchers.Main) {
+                              addBotBubble("Cloud Error: ${e.message}")
+                          }
+                      }
+                  }
               }
 
-              private fun showTopMenu(anchor: View) {
-                  val popup = PopupMenu(this, anchor)
-                  popup.menu.add(0, 1, 0, if (isTtsEnabled) "🔊 Voice: ON" else "🔇 Voice: OFF")
-                  popup.menu.add(0, 2, 1, "⚙ Switch Engine ($engineMode)")
-                  popup.menu.add(0, 3, 2, "🌐 Change Cloud URL")
-                  popup.menu.add(0, 4, 3, "🗑 Clear Chat")
+              private fun startVoiceInput() {
+                  if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+                      Toast.makeText(this, "Voice recognition unavailable", Toast.LENGTH_SHORT).show()
+                      return
+                  }
+                  speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+                  val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                      putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                      putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                  }
+                  speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+                      override fun onReadyForSpeech(params: Bundle?) { inputPrompt.hint = "Listening..." }
+                      override fun onResults(results: Bundle?) {
+                          inputPrompt.hint = "Ask AutoMind..."
+                          val match = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.get(0)
+                          if (!match.isNullOrEmpty()) submitCommand(match)
+                      }
+                      override fun onError(error: Int) { inputPrompt.hint = "Ask AutoMind..." }
+                      override fun onBeginningOfSpeech() {}
+                      override fun onRmsChanged(rmsdB: Float) {}
+                      override fun onBufferReceived(buffer: ByteArray?) {}
+                      override fun onEndOfSpeech() {}
+                      override fun onPartialResults(p0: Bundle?) {}
+                      override fun onEvent(p0: Int, p1: Bundle?) {}
+                  })
+                  speechRecognizer?.startListening(intent)
+              }
 
-                  popup.setOnMenuItemClickListener { item ->
-                      when (item.itemId) {
-                          1 -> {
-                              isTtsEnabled = !isTtsEnabled
-                              prefs.edit().putBoolean("tts_enabled", isTtsEnabled).apply()
-                          }
-                          2 -> {
-                              engineMode = when (engineMode) {
-                                  "HYBRID" -> "OFFLINE_ONLY"
-                                  "OFFLINE_ONLY" -> "ONLINE_ONLY"
-                                  else -> "HYBRID"
-                              }
-                              prefs.edit().putString("engine_mode", engineMode).apply()
-                              statusBadge.text = "● $engineMode ENGINE"
-                              Toast.makeText(this, "Mode: $engineMode", Toast.LENGTH_SHORT).show()
-                          }
-                          
+              override fun onInit(status: Int) {
+                  if (status == TextToSpeech.SUCCESS) tts.language = Locale("hi", "IN")
+              }
+
+              override fun onDestroy() {
+                  tts.shutdown()
+                  speechRecognizer?.destroy()
+                  super.onDestroy()
+              }
+          }
+          EOF
+
+      - name: Build Debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload Compiled APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoMind-Pro-APK
+          path: app/build/out
