@@ -27,7 +27,7 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Generate Part 1 Configs
+      - name: Generate Part 1
         run: |
           mkdir -p app/src/main/java/com/automind/agent
           mkdir -p app/src/main/res/drawable
@@ -64,7 +64,7 @@ jobs:
           android.nonTransitiveRClass=true
           android.suppressUnsupportedCompileSdk=34
           EOF
-                - name: Generate Part 2 Gradle and Manifest
+                - name: Generate Part 2
         run: |
           cat << 'EOF' > app/build.gradle
           plugins {
@@ -136,7 +136,7 @@ jobs:
               </application>
           </manifest>
           EOF
-                - name: Generate Part 3 MainActivity Setup
+                - name: Generate Part 3
         run: |
           cat << 'EOF' > app/src/main/java/com/automind/agent/MainActivity.kt
           package com.automind.agent
@@ -230,7 +230,7 @@ jobs:
               private fun scrollToBottom() {
                   chatScrollView.post { chatScrollView.fullScroll(View.FOCUS_DOWN) }
               }
-                           private fun buildUi() {
+                            private fun buildUi() {
                   val root = RelativeLayout(this).apply {
                       setBackgroundColor(Color.parseColor("#131314"))
                   }
